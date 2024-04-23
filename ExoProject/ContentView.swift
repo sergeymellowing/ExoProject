@@ -6,28 +6,27 @@
 //
 
 import SwiftUI
-import CoreBluetooth
+import LittleBlueTooth
+import Combine
 
 struct ContentView: View {
-    @StateObject var bluetoothManager = BluetoothManager()
+    @StateObject var bleManager = BLEManager()
     
     @State var firstDeviceConnected: Bool = false
     @State var secondDeviceConnected: Bool = false
     @State var thirdDeviceConnected: Bool = false
     @State var fourthDeviceConnected: Bool = false
     
+    @State var disposeBag = Set<AnyCancellable>()
+    
     var body: some View {
         VStack {
-            Button(action: {
-                            bluetoothManager.toggleBluetooth()
-                        }) {
-                    Text(bluetoothManager.isBluetoothEnabled ? "Turn Off Bluetooth" : "Turn On Bluetooth")
-                                .padding()
-                   }
-                        
-              Text("Bluetooth is \(bluetoothManager.isBluetoothEnabled ? "enabled" : "disabled")")
-//                            .padding()
+            Text(bleManager.text)
+                .font(.headline)
             
+            Button(action: bleManager.discover) {
+                Text("START DISCOVER")
+            }
             
             HStack {
                 CustomButton(title: "DEVICE 1", action: connectFirstDevice, isConnected: $firstDeviceConnected)
@@ -90,4 +89,33 @@ struct CustomButton: View {
 
 #Preview {
     ContentView()
+}
+
+struct NewBleView: View {
+    @StateObject var bleManager = BLEManager()
+    
+    var body: some View {
+        VStack(spacing: 40) {
+            Button(action: {
+                bleManager.pressedConnect()
+            }) {
+                Text(bleManager.connected ? "DISCONNECT" : "CONNECT")
+                    .font(.title)
+            }
+            
+            Button(action: {
+                bleManager.startListening()
+            }) {
+                Text("START LISTENING")
+                    .font(.title)
+            }
+            
+            Button(action: {
+                bleManager.getWifiList()
+            }) {
+                Text("GET WIFI LIST")
+                    .font(.title)
+            }
+        }
+    }
 }

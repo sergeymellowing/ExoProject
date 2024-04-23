@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import UIKit
+import LittleBlueTooth
 
 @main
 struct ExoProjectApp: App {
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+//            NewBleView()
         }
     }
 }
