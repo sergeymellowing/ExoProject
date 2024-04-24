@@ -36,6 +36,7 @@ class BLEManager: ObservableObject {
     @Published var connected = false
     @Published var buttonIsEnabe: Bool = false
     @Published var text: String = "__"
+    @Published var list: [PeripheralDiscovery] = []
     
     let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.HRMService, properties: .notify)
     let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.HRMService, properties: .read)
@@ -56,22 +57,74 @@ class BLEManager: ObservableObject {
     func discover() {
         print("discovering...")
         StartLittleBlueTooth
-            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.HRMService)])
-            .prefix(1)
+            .startDiscovery(for: self.littleBT, withServices: [])
+                    .collect(10)
+                    .map{ (discoveries) -> [PeripheralDiscovery] in
+                        print("Discoveries: \(discoveries)")
+                        return discoveries
+//                        return self.littleBT.stopDiscovery().map { discoveries }
+                    }
+                    .sink(receiveCompletion: { result in
+                        print("Result: \(result)")
+                        switch result {
+                        case .finished:
+                            break
+                        case .failure(let error):
+                            // Handle errors
+                            print("Error: \(error)")
+                        }
+                    }, receiveValue: { peripherals in
+                        self.list = peripherals
+                        print("Discovered Peripherals \(peripherals)")
+                    })
+                    .store(in: &disposeBag)
+        
+//        StartLittleBlueTooth
+//            .startDiscovery(for: self.littleBT, withServices: [])
+//            .prefix(4)
+//            .sink(receiveCompletion: { result in
+//                
+//                print("Result: \(result)")
+//                switch result {
+//                case .finished:
+//                    break
+//                case .failure(let error):
+//                    print("Error trying to connect: \(error)")
+//                }
+//            }) { (periph) in
+////                print("Periph from startDiscovering: \(periph)")
+//                if let name = periph.name, !self.list.contains(name) {
+//                    self.list.append(name)
+//                }
+//        }
+//            .store(in: &disposeBag)
+    }
+    
+    func connect(discovery: PeripheralDiscovery?, completion: @escaping (Bool) -> Void) {
+        guard let discovery else {
+            print("No Discovery!")
+            completion(false)
+            return
+        }
+        print("trying to connect to: \(discovery.name)")
+        self.littleBT
+            .connect(to: discovery)
             .sink(receiveCompletion: { result in
                 print("Result: \(result)")
                 switch result {
                 case .finished:
+                    completion(false)
                     break
                 case .failure(let error):
-                    print("Error trying to connect: \(error)")
+                    print(error)
+                    completion(false)
+                    break
+                    // Handle errors
                 }
-            }) { (periph) in
-                print("Periph from startDiscovering: \(periph)")
-                self.buttonIsEnabe = true
-                self.connected = true
-                self.startListening()
-        }
+            }, receiveValue: { (periph) in
+                print("Connected Peripheral \(periph)")
+                completion(true)
+            })
             .store(in: &disposeBag)
     }
     
