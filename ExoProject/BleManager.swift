@@ -11,7 +11,9 @@ import LittleBlueTooth
 import Combine
 
 enum HRMCostants {
-    static let HRMService = "6e877c60-0e50-493f-b012-3a86acf4610e"
+    // TODO: PASS HERE PROPER CHARACTERISTICS FOR IOT DEVICES
+    static let DEVICE_SERVICE_UUID = "6e877c60-0e50-493f-b012-3a86acf4610e"
+    
     static let notify = "6e877c62-0e50-493f-b012-3a86acf4610e" // Notify
     static let read = "6e877c62-0e50-493f-b012-3a86acf4610e" // Read
     static let write = "6e877c61-0e50-493f-b012-3a86acf4610e" // Write
@@ -28,7 +30,6 @@ final class LittleBLE {
         }
         littleBT = LittleBlueTooth(with: littleBTConf)
     }
-    
 }
 
 class BLEManager: ObservableObject {
@@ -38,9 +39,9 @@ class BLEManager: ObservableObject {
     @Published var text: String = "__"
     @Published var list: [PeripheralDiscovery] = []
     
-    let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.HRMService, properties: .notify)
-    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.HRMService, properties: .read)
-    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.HRMService, properties: .write)
+    let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
+    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .read)
+    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .write)
     
     var littleBT = LittleBLE.shared.littleBT!
     
@@ -57,7 +58,7 @@ class BLEManager: ObservableObject {
     func discover() {
         print("discovering...")
         StartLittleBlueTooth
-            .startDiscovery(for: self.littleBT, withServices: [])
+            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)])
                     .collect(10)
                     .map{ (discoveries) -> [PeripheralDiscovery] in
                         print("Discoveries: \(discoveries)")
@@ -131,7 +132,7 @@ class BLEManager: ObservableObject {
     func connect() {
         print("goes to connect")
         StartLittleBlueTooth
-            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.HRMService)])
+            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)])
             .prefix(1)
             .connect(for: self.littleBT)
             .sink(receiveCompletion: { result in
