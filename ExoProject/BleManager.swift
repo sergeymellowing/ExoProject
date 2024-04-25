@@ -12,6 +12,7 @@ import Combine
 
 enum HRMCostants {
     // TODO: PASS HERE PROPER CHARACTERISTICS FOR IOT DEVICES
+    // different services for dif devices?
     static let DEVICE_SERVICE_UUID = "6e877c60-0e50-493f-b012-3a86acf4610e"
     
     static let notify = "6e877c62-0e50-493f-b012-3a86acf4610e" // Notify
@@ -40,8 +41,8 @@ class BLEManager: ObservableObject {
     @Published var list: [PeripheralDiscovery] = []
     
     let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
-    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .read)
-    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .write)
+    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
+    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
     
     var littleBT = LittleBLE.shared.littleBT!
     
@@ -59,26 +60,26 @@ class BLEManager: ObservableObject {
         print("discovering...")
         StartLittleBlueTooth
             .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)])
-                    .collect(10)
-                    .map{ (discoveries) -> [PeripheralDiscovery] in
-                        print("Discoveries: \(discoveries)")
-                        return discoveries
-//                        return self.littleBT.stopDiscovery().map { discoveries }
-                    }
-                    .sink(receiveCompletion: { result in
-                        print("Result: \(result)")
-                        switch result {
-                        case .finished:
-                            break
-                        case .failure(let error):
-                            // Handle errors
-                            print("Error: \(error)")
-                        }
-                    }, receiveValue: { peripherals in
-                        self.list = peripherals
-                        print("Discovered Peripherals \(peripherals)")
-                    })
-                    .store(in: &disposeBag)
+            .collect(.byTime(RunLoop.main, .seconds(1)))
+            .map{ (discoveries) -> [PeripheralDiscovery] in
+                print("Discoveries: \(discoveries.map { $0.id } )")
+                return discoveries
+                //                        return self.littleBT.stopDiscovery().map { discoveries }
+            }
+            .sink(receiveCompletion: { result in
+                print("Result: \(result)")
+                switch result {
+                case .finished:
+                    break
+                case .failure(let error):
+                    // Handle errors
+                    print("Error: \(error)")
+                }
+            }, receiveValue: { peripherals in
+                self.list = peripherals
+                print("Discovered Peripherals \(peripherals)")
+            })
+            .store(in: &disposeBag)
         
 //        StartLittleBlueTooth
 //            .startDiscovery(for: self.littleBT, withServices: [])
@@ -107,7 +108,6 @@ class BLEManager: ObservableObject {
             completion(false)
             return
         }
-        print("trying to connect to: \(discovery.name)")
         self.littleBT
             .connect(to: discovery)
             .sink(receiveCompletion: { result in
@@ -124,9 +124,11 @@ class BLEManager: ObservableObject {
                 }
             }, receiveValue: { (periph) in
                 print("Connected Peripheral \(periph)")
+//                self.startListening()
                 completion(true)
             })
             .store(in: &disposeBag)
+        
     }
     
     func connect() {
@@ -147,7 +149,8 @@ class BLEManager: ObservableObject {
                 print("Periph from startDiscovering: \(periph)")
                 self.buttonIsEnabe = true
                 self.connected = true
-                self.startListening()
+//                self.startListening()
+                
         }
         .store(in: &disposeBag)
         
@@ -169,6 +172,7 @@ class BLEManager: ObservableObject {
     }
     
     func startListening() {
+        print("trying to listen . .. ")
         StartLittleBlueTooth
             .startListen(for: self.littleBT, from: notifyChar)
             .sink(receiveCompletion: { (result) in
@@ -180,8 +184,8 @@ class BLEManager: ObservableObject {
                         print("Error while trying to listen: \(error)")
                     }
             }) { (value: readWifi) in
-                
-                self.text = String(value.list)
+                print(value)
+//                self.text = String(value.list)
             }
             .store(in: &disposeBag)
     }

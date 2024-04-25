@@ -30,6 +30,7 @@ struct ContentView: View {
             
             ScrollView {
                 let names = bleManager.list.filter{ (($0.name?.isEmpty) != nil) }.map { $0.name ?? "noname" }
+                let ids = bleManager.list.map { $0.id }
 //                let adaptiveColumn = [
 //                    GridItem(.flexible(minimum: 100, maximum: 200)),
 //                    GridItem(.flexible(minimum: 100, maximum: 200))
@@ -57,29 +58,30 @@ struct ContentView: View {
 //                    }
 //                }
                 
-                ForEach(names, id: \.self) { name in
+                ForEach(ids, id: \.self) { id in
                     Button(action: {
-                        bleManager.connect(discovery: bleManager.list.first(where: { $0.name == name })) { success in
-                            guard let peripheral = bleManager.list.first(where: { $0.name == name }) else { return }
-                                                                         
+                        bleManager.connect(discovery: bleManager.list.first(where: { $0.id == id })) { success in
+                            guard let peripheral = bleManager.list.first(where: { $0.id == id }) else { return }
+                            print("trying to connect to: \(id)")
                             self.connectedDevices.append(peripheral)
                         }
                     }) {
-                        Text(name)
+                        Text(id.uuidString)
                             .padding(20)
-                            .background((self.connectedDevices.contains(where: { $0.name == name }) ? Color.green.opacity(0.5) : Color.gray.opacity(0.2)))
+                            .frame(maxWidth: .infinity)
+                            .background((self.connectedDevices.contains(where: { $0.id == id }) ? Color.green.opacity(0.5) : Color.gray.opacity(0.2)))
+                            .padding(10)
                     }
                 }
             }
             
-//            HStack {
-//                CustomButton(title: "DEVICE 1", action: connectFirstDevice, isConnected: $firstDeviceConnected)
-//                CustomButton(title: "DEVICE 2", action: connectSecondDevice, isConnected: $secondDeviceConnected)
-//            }
-//            HStack {
-//                CustomButton(title: "DEVICE 3", action: connectThirdDevice, isConnected: $thirdDeviceConnected)
-//                CustomButton(title: "DEVICE 4", action: connectFourthDevice, isConnected: $fourthDeviceConnected)
-//            }
+            Button(action: { bleManager.startListening() }) {
+                Text("LISTEN")
+                    .font(.title)
+                    .frame(maxWidth: .infinity, maxHeight: 55)
+            }
+            .buttonStyle(.bordered)
+            .padding()
             
             Button(action: save) {
                 Text("SAVE")
