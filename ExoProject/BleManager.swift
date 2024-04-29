@@ -38,7 +38,9 @@ class BLEManager: ObservableObject {
     @Published var connected = false
     @Published var buttonIsEnabe: Bool = false
     @Published var text: String = "__"
-    @Published var list: [PeripheralDiscovery] = []
+    @Published var list: [UUID] = []
+    @Published var discoveries: [PeripheralDiscovery] = []
+    @Published var data: [[UInt8]] = [[]]
     
     let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
     let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
@@ -78,7 +80,8 @@ class BLEManager: ObservableObject {
                     print("Error: \(error)")
                 }
             }, receiveValue: { peripherals in
-                self.list = peripherals
+                self.list = peripherals.map({ $0.id })
+                self.discoveries = peripherals
                 print("Discovered Peripherals \(peripherals)")
             })
             .store(in: &disposeBag)
@@ -166,9 +169,9 @@ class BLEManager: ObservableObject {
                     case .failure(let error):
                         print("Error while trying to listen: \(error)")
                     }
-            }) { (value: readWifi) in
+            }) { (value: readData) in
                 
-                self.text = String(value.list)
+//                self.text = String(value.list)
             }
             .store(in: &disposeBag)
     }
@@ -176,7 +179,7 @@ class BLEManager: ObservableObject {
     func startListening() {
         print("trying to listen . .. ")
         StartLittleBlueTooth
-            .startListen(for: self.littleBT, from: writeAndListenChar)
+            .startListen(for: self.littleBT, from: notifyChar)
             .sink(receiveCompletion: { (result) in
                     print("Result listening: \(result)")
                     switch result {
@@ -185,16 +188,34 @@ class BLEManager: ObservableObject {
                     case .failure(let error):
                         print("Error while trying to listen: \(error)")
                     }
-            }) { (value: readWifi) in
-                print(value)
+            }) { (value: readData) in
+                self.data.append(value.bytes)
+                print(value.bytes)
 //                self.text = String(value.list)
             }
             .store(in: &disposeBag)
     }
     
-    func getWifiList() {
+    func start() {
         StartLittleBlueTooth
-            .write(for: littleBT, to: writeChar, value: GetWifiCommand(), response: false)
+            .write(for: littleBT, to: writeChar, value: startCommand(), response: false)
+            .sink(receiveCompletion: { (result) in
+                print("Writing result: \(result)")
+                switch result {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error while writing control point: \(error)")
+                    break
+                }
+                
+            }) {}
+            .store(in: &disposeBag)
+    }
+    
+    func stop() {
+        StartLittleBlueTooth
+            .write(for: littleBT, to: writeChar, value: stopCommand(), response: false)
             .sink(receiveCompletion: { (result) in
                 print("Writing result: \(result)")
                 switch result {
@@ -227,31 +248,31 @@ class BLEManager: ObservableObject {
         .store(in: &disposeBag)
     }
     
-    func writeAndListen() {
-        self.littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)], options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
-                .flatMap { discovery in
-                    self.littleBT.connect(to: discovery)
-                }
-                .flatMap { _ in
-                    self.littleBT.writeAndListen(from: self.notifyChar, value: GetWifiCommand())
-                }
-                .sink(receiveCompletion: { result in
-                    print("Result: \(result)")
-                    switch result {
-                    case .finished:
-                        break
-                    case .failure(let error):
-                        print("Error: \(error)")
-                        // Handle error
-                    }
-                }) { (answer: readWifi) in
-                    print("Answer \(answer)")
-                }
-                .store(in: &disposeBag)
-    }
+//    func writeAndListen() {
+//        self.littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)], options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
+//                .flatMap { discovery in
+//                    self.littleBT.connect(to: discovery)
+//                }
+//                .flatMap { _ in
+//                    self.littleBT.writeAndListen(from: self.notifyChar, value: start())
+//                }
+//                .sink(receiveCompletion: { result in
+//                    print("Result: \(result)")
+//                    switch result {
+//                    case .finished:
+//                        break
+//                    case .failure(let error):
+//                        print("Error: \(error)")
+//                        // Handle error
+//                    }
+//                }) { (answer: readWifi) in
+//                    print("Answer \(answer)")
+//                }
+//                .store(in: &disposeBag)
+//    }
 }
 
-struct GetWifiCommand: Writable {
+struct startCommand: Writable {
     func createGetWiFiListCommand() -> [UInt8] {
         var payload = [UInt8]();
         payload.append(18);
@@ -265,60 +286,97 @@ struct GetWifiCommand: Writable {
     }
 }
 
-struct readWifi: Readable {
+struct stopCommand: Writable {
+    func createGetWiFiListCommand() -> [UInt8] {
+        var payload = [UInt8]();
+        payload.append(19);
+        payload.append(0x00);
+        payload.append(0x00);
+        return payload;
+    }
+    
+    var data: Data {
+        return Data(createGetWiFiListCommand())
+    }
+}
+
+struct readData: Readable {
 
     init(from data: Data) throws {
-//        let wifi = bytesToString(data: [UInt8](data))
-//        if !wifi.isEmpty {
-            list = bytesToString(data: [UInt8](data))
-        print("--------------------")
-        print(list)
-//        }
-        
-//        print("result?: \(result)")
+        var newArr = [UInt8]()
+
+//        guard data.count > 1 else { return "" }
+
+        for i in 2..<data.count {
+//            if data[i] != 0 {
+                newArr.append(data[i])
+//            }
+        }
+        bytes = [UInt8](newArr)
+//            print(bytesToString(data: [UInt8](data)))
+        var uint16Array: [Int] = []
+        for i in stride(from: 0, to: newArr.count, by: 2) {
+//            let byte1 = UInt16(newArr[i])
+//            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
+//            let combined = byte2 << 8 | byte1
+            let byte1 = newArr[i]
+            let byte2 = i + 1 < newArr.count ? newArr[i + 1] : 0
+            let combined = byte1 | byte2 << 8
+            uint16Array.append(Int(combined))
+        }
+
+        print("uint16Array: \(uint16Array)")
+        print("count: \(uint16Array.count)")
+//        print(String(utf16CodeUnits: uint16Array, count: uint16Array.count))
+        if let string = String(bytes: newArr, encoding: .utf8) {
+            print("UTF8: \(string)")
+        }
+            
     }
-    var list: String
+//    var list: String
+    var bytes: [UInt8]
 }
 
 //func bytesToString(data: [UInt8]) -> String {
-//    var newArr = [UInt8]()
-//
+////  print(data)
+////  print(data.count)
+//  var newArr = [UInt8]()
+//    
 //    guard data.count > 1 else { return "" }
-//
-//    for i in 2..<data.count {
-//        if data[i] != 0 {
-//            newArr.append(data[i])
-//        }
-//    }
-//    if let string = String(bytes: newArr, encoding: .ascii) {
-//        print("from bytesToString: \(string)")
-//        return string
-//    } else {
-//        print("sdfsdfsd")
-//        return ""
-//    }
-//}
+//    
+//  for i in 2..<data.count {
+//      if data[i] != 0 {
+//          newArr.append(data[i])
+//      }
+//  }
+//    print(newArr)
+//  if let string = String(bytes: newArr, encoding: .utf8) {
+//      print(string)
+//      return string
+//  } else {
+//      return "wrong format"
+//  }
+////    return newArr.description
+
 
 func bytesToString(data: [UInt8]) -> String {
-//  print(data)
-//  print(data.count)
-  var newArr = [UInt8]()
-    
+    var newArr = [UInt8]()
+
     guard data.count > 1 else { return "" }
+
+    for i in 2..<data.count {
+//        if data[i] != 0 {
+            newArr.append(data[i])
+//        }
+    }
+//    print("newArr:")
+//    print(newArr)
     
-  for i in 2..<data.count {
-      if data[i] != 0 {
-          newArr.append(data[i])
-      }
-  }
-  print(newArr)
-  print(newArr.count)
-  print(String(bytes: newArr, encoding: .ascii))
-  print(String(bytes: newArr, encoding: .utf8))
-  if let string = String(bytes: newArr, encoding: .ascii) {
-      print(string)
-      return string
-  } else {
-      return ""
-  }
+    if let string = String(bytes: newArr, encoding: .utf8) {
+//        print("from bytesToString: \(string)")
+        return string
+    } else {
+//        print("sdfsdfsd")
+        return ""
+    }
 }

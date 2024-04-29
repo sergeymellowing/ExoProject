@@ -29,8 +29,9 @@ struct ContentView: View {
             .padding()
             
             ScrollView {
-                let names = bleManager.list.filter{ (($0.name?.isEmpty) != nil) }.map { $0.name ?? "noname" }
-                let ids = bleManager.list.map { $0.id }
+//                let names = bleManager.list.filter{ (($0.name?.isEmpty) != nil) }.map { $0.name ?? "noname" }
+//                let ids = bleManager.list.map { $0.id }
+                
 //                let adaptiveColumn = [
 //                    GridItem(.flexible(minimum: 100, maximum: 200)),
 //                    GridItem(.flexible(minimum: 100, maximum: 200))
@@ -58,10 +59,10 @@ struct ContentView: View {
 //                    }
 //                }
                 
-                ForEach(ids, id: \.self) { id in
+                ForEach(bleManager.list, id: \.self) { id in
                     Button(action: {
-                        bleManager.connect(discovery: bleManager.list.first(where: { $0.id == id })) { success in
-                            guard let peripheral = bleManager.list.first(where: { $0.id == id }) else { return }
+                        bleManager.connect(discovery: bleManager.discoveries.first(where: { $0.id == id })) { success in
+                            guard let peripheral = bleManager.discoveries.first(where: { $0.id == id }) else { return }
                             print("trying to connect to: \(id)")
                             self.connectedDevices.append(peripheral)
                         }
@@ -76,26 +77,45 @@ struct ContentView: View {
             }
             
             Button(action: { bleManager.connect() }) {
+                Text("CONNECT")
+                    .font(.title)
+                    .frame(maxWidth: .infinity, maxHeight: 55)
+            }
+            .buttonStyle(.bordered)
+            .padding(5)
+            
+            Button(action: { bleManager.start() }) {
+                Text("START")
+                    .font(.title)
+                    .frame(maxWidth: .infinity, maxHeight: 55)
+            }
+            .buttonStyle(.bordered)
+            .padding(5)
+            
+            Button(action: { bleManager.startListening() }) {
                 Text("LISTEN")
                     .font(.title)
                     .frame(maxWidth: .infinity, maxHeight: 55)
             }
             .buttonStyle(.bordered)
-            .padding()
-            Button(action: { bleManager.getWifiList() }) {
-                Text("WRITE")
+            .padding(5)
+            
+            
+            Button(action: { bleManager.stop() }) {
+                Text("STOP")
                     .font(.title)
                     .frame(maxWidth: .infinity, maxHeight: 55)
             }
             .buttonStyle(.bordered)
-            .padding()
+            .padding(5)
+            
             Button(action: save) {
                 Text("SAVE")
                     .font(.title)
                     .frame(maxWidth: .infinity, maxHeight: 55)
             }
             .buttonStyle(.bordered)
-            .padding()
+            .padding(5)
             
             Spacer()
         }
@@ -104,8 +124,7 @@ struct ContentView: View {
 
     //TODO: save all peripherals to DB
     private func save() {
-        print("save all peripherals to DB:")
-        print(self.connectedDevices)
+        UserDefaults.standard.setValue(self.bleManager.data, forKey: "data1")
     }
 }
 
@@ -148,7 +167,7 @@ struct NewBleView: View {
             }
             
             Button(action: {
-                bleManager.getWifiList()
+                bleManager.start()
             }) {
                 Text("GET WIFI LIST")
                     .font(.title)
