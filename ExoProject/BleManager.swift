@@ -314,15 +314,15 @@ struct readData: Readable {
         }
         bytes = [UInt8](newArr)
 //            print(bytesToString(data: [UInt8](data)))
-        var uint16Array: [Int] = []
+        var uint16Array: [Int16] = []
         for i in stride(from: 0, to: newArr.count, by: 2) {
 //            let byte1 = UInt16(newArr[i])
 //            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
 //            let combined = byte2 << 8 | byte1
             let byte1 = newArr[i]
-            let byte2 = i + 1 < newArr.count ? newArr[i + 1] : 0
-            let combined = byte1 | byte2 << 8
-            uint16Array.append(Int(combined))
+            let byte2 = newArr[i + 1]
+            let combined = byte1 << 8 | byte2
+            uint16Array.append(Int16(combined))
         }
 
         print("uint16Array: \(uint16Array)")
