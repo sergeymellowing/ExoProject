@@ -44,6 +44,8 @@ class BLEManager: ObservableObject {
     let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
     let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
     
+    let writeAndListenChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: [.notify, .write])
+    
     var littleBT = LittleBLE.shared.littleBT!
     
     var disposeBag = Set<AnyCancellable>()
@@ -174,7 +176,7 @@ class BLEManager: ObservableObject {
     func startListening() {
         print("trying to listen . .. ")
         StartLittleBlueTooth
-            .startListen(for: self.littleBT, from: notifyChar)
+            .startListen(for: self.littleBT, from: writeAndListenChar)
             .sink(receiveCompletion: { (result) in
                     print("Result listening: \(result)")
                     switch result {
@@ -224,12 +226,35 @@ class BLEManager: ObservableObject {
         }
         .store(in: &disposeBag)
     }
+    
+    func writeAndListen() {
+        self.littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)], options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
+                .flatMap { discovery in
+                    self.littleBT.connect(to: discovery)
+                }
+                .flatMap { _ in
+                    self.littleBT.writeAndListen(from: self.notifyChar, value: GetWifiCommand())
+                }
+                .sink(receiveCompletion: { result in
+                    print("Result: \(result)")
+                    switch result {
+                    case .finished:
+                        break
+                    case .failure(let error):
+                        print("Error: \(error)")
+                        // Handle error
+                    }
+                }) { (answer: readWifi) in
+                    print("Answer \(answer)")
+                }
+                .store(in: &disposeBag)
+    }
 }
 
 struct GetWifiCommand: Writable {
     func createGetWiFiListCommand() -> [UInt8] {
         var payload = [UInt8]();
-        payload.append(19);
+        payload.append(18);
         payload.append(0x00);
         payload.append(0x00);
         return payload;
@@ -246,6 +271,8 @@ struct readWifi: Readable {
 //        let wifi = bytesToString(data: [UInt8](data))
 //        if !wifi.isEmpty {
             list = bytesToString(data: [UInt8](data))
+        print("--------------------")
+        print(list)
 //        }
         
 //        print("result?: \(result)")
@@ -284,9 +311,10 @@ func bytesToString(data: [UInt8]) -> String {
           newArr.append(data[i])
       }
   }
-//  print(newArr)
-//  print(newArr.count)
-//  print(String(bytes: newArr, encoding: .ascii))
+  print(newArr)
+  print(newArr.count)
+  print(String(bytes: newArr, encoding: .ascii))
+  print(String(bytes: newArr, encoding: .utf8))
   if let string = String(bytes: newArr, encoding: .ascii) {
       print(string)
       return string

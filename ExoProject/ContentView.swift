@@ -75,14 +75,20 @@ struct ContentView: View {
                 }
             }
             
-            Button(action: { bleManager.startListening() }) {
+            Button(action: { bleManager.connect() }) {
                 Text("LISTEN")
                     .font(.title)
                     .frame(maxWidth: .infinity, maxHeight: 55)
             }
             .buttonStyle(.bordered)
             .padding()
-            
+            Button(action: { bleManager.getWifiList() }) {
+                Text("WRITE")
+                    .font(.title)
+                    .frame(maxWidth: .infinity, maxHeight: 55)
+            }
+            .buttonStyle(.bordered)
+            .padding()
             Button(action: save) {
                 Text("SAVE")
                     .font(.title)
