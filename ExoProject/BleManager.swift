@@ -248,29 +248,70 @@ class BLEManager: ObservableObject {
         .store(in: &disposeBag)
     }
     
-//    func writeAndListen() {
-//        self.littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)], options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
-//                .flatMap { discovery in
-//                    self.littleBT.connect(to: discovery)
-//                }
-//                .flatMap { _ in
-//                    self.littleBT.writeAndListen(from: self.notifyChar, value: start())
-//                }
-//                .sink(receiveCompletion: { result in
-//                    print("Result: \(result)")
-//                    switch result {
-//                    case .finished:
-//                        break
-//                    case .failure(let error):
-//                        print("Error: \(error)")
-//                        // Handle error
-//                    }
-//                }) { (answer: readWifi) in
-//                    print("Answer \(answer)")
-//                }
-//                .store(in: &disposeBag)
-//    }
-}
+    func multipleListener() {
+        // First publisher
+        littleBT.listenPublisher
+        .filter { charact -> Bool in
+            charact.id == self.readChar.id
+        }
+        .tryMap { (characteristic) -> readData in
+                try characteristic.value()
+        }
+        .mapError { (error) -> LittleBluetoothError in
+            if let er = error as? LittleBluetoothError {
+                return er
+            }
+            return .emptyData
+        }
+        .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print("Sub1: \(answer)")
+        }
+        .store(in: &self.disposeBag)
+
+        // Second publisher
+        littleBT.listenPublisher
+        .filter { charact -> Bool in
+            charact.id == self.readChar.id
+        }
+        .tryMap { (characteristic) -> readData in
+            try characteristic.value()
+        }.mapError { (error) -> LittleBluetoothError in
+            if let er = error as? LittleBluetoothError {
+                return er
+            }
+            return .emptyData
+        }
+        .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print("Sub2: \(answer)")
+        }
+        .store(in: &self.disposeBag)
+
+
+        littleBT.startDiscovery(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
+        .map { disc -> PeripheralDiscovery in
+                print("Discovery discovery \(disc)")
+                return disc
+        }
+        .flatMap { discovery in
+            self.littleBT.connect(to: discovery)
+        }
+        .flatMap { periph in
+            self.littleBT.enableListen(from: self.readChar)
+        }
+        .flatMap { periph in
+            self.littleBT.enableListen(from: self.readChar)
+        }
+        .sink(receiveCompletion: { completion in
+            print("Completion \(completion)")
+        }) { (answer) in
+          
+        }
+        .store(in: &disposeBag)
+    }
 
 struct startCommand: Writable {
     func createGetWiFiListCommand() -> [UInt8] {
@@ -335,6 +376,49 @@ struct readData: Readable {
     }
 //    var list: String
     var bytes: [UInt8]
+}
+
+struct readAndConvertData: Readable {
+    init(from data: Data) throws {
+        var newArr = [UInt8]()
+        
+        //        guard data.count > 1 else { return "" }
+        
+        for i in 2..<data.count {
+            //            if data[i] != 0 {
+            newArr.append(data[i])
+        }
+        var uint16Array: [Int16] = []
+        for i in stride(from: 0, to: newArr.count, by: 2) {
+//            let byte1 = UInt16(newArr[i])
+//            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
+//            let combined = byte2 << 8 | byte1
+            let byte1 = newArr[i]
+            let byte2 = newArr[i + 1]
+            var combined: Int32 = Int32(UInt32(byte1) * 256 + UInt32(byte2))
+            if (combined > 32768) {
+                combined = combined-65536
+            }
+            uint16Array.append(Int16(combined))
+        }
+    }
+}
+
+func convertBytesToInt(newArr: [Int]) -> [Int16] {
+    var uint16Array: [Int16] = []
+    for i in stride(from: 0, to: newArr.count, by: 2) {
+//            let byte1 = UInt16(newArr[i])
+//            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
+//            let combined = byte2 << 8 | byte1
+        let byte1 = newArr[i]
+        let byte2 = newArr[i + 1]
+        var combined: Int32 = Int32(UInt32(byte1) * 256 + UInt32(byte2))
+        if (combined > 32768) {
+            combined = combined-65536
+        }
+        uint16Array.append(Int16(combined))
+    }
+    return uint16Array
 }
 
 //func bytesToString(data: [UInt8]) -> String {

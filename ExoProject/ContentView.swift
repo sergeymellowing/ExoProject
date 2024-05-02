@@ -19,8 +19,7 @@ struct ContentView: View {
     
     @State var connectedDevices: [PeripheralDiscovery] = []
     
-    @State var disposeBag = Set<AnyCancellable>()
-    
+    let a =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 217, 253, 114, 6, 102, 4, 59, 255, 236, 0, 2, 2, 72, 89, 210, 253, 253, 4, 137, 6, 130, 255, 251, 255, 253, 1, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     var body: some View {
         VStack {
             Button(action: bleManager.discover) {
@@ -29,6 +28,12 @@ struct ContentView: View {
             .padding()
             
             ScrollView {
+                Text(convertBytesToInt(newArr: a).description)
+                    .onAppear {
+                        print(convertBytesToInt(newArr: a))
+                        print(convertBytesToInt(newArr: a).count)
+                    }
+                
 //                let names = bleManager.list.filter{ (($0.name?.isEmpty) != nil) }.map { $0.name ?? "noname" }
 //                let ids = bleManager.list.map { $0.id }
                 
