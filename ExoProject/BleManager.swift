@@ -13,11 +13,26 @@ import Combine
 enum HRMCostants {
     // TODO: PASS HERE PROPER CHARACTERISTICS FOR IOT DEVICES
     // different services for dif devices?
+    static let DEVICE_SERVICE_UUID1 = "6e877c60-0e50-493f-b012-0a86acf4610e"
+    static let DEVICE_SERVICE_UUID2 = "6e877c60-0e50-493f-b012-1a86acf4610e"
+    static let DEVICE_SERVICE_UUID3 = "6e877c60-0e50-493f-b012-2a86acf4610e"
     static let DEVICE_SERVICE_UUID = "6e877c60-0e50-493f-b012-3a86acf4610e"
     
     static let notify = "6e877c62-0e50-493f-b012-3a86acf4610e" // Notify
     static let read = "6e877c62-0e50-493f-b012-3a86acf4610e" // Read
     static let write = "6e877c61-0e50-493f-b012-3a86acf4610e" // Write
+    
+    static let NOTIFY1 = "6e877c62-0e50-493f-b012-0a86acf4610e" // Notify
+    static let READ1 = "6e877c62-0e50-493f-b012-0a86acf4610e" // Read
+    static let WRITE1 = "6e877c61-0e50-493f-b012-0a86acf4610e" // Write
+    
+    static let NOTIFY2 = "6e877c62-0e50-493f-b012-1a86acf4610e" // Notify
+    static let READ2 = "6e877c62-0e50-493f-b012-1a86acf4610e" // Read
+    static let WRITE2 = "6e877c61-0e50-493f-b012-1a86acf4610e" // Write
+    
+    static let NOTIFY3 = "6e877c62-0e50-493f-b012-2a86acf4610e" // Notify
+    static let READ3 = "6e877c62-0e50-493f-b012-2a86acf4610e" // Read
+    static let WRITE3 = "6e877c61-0e50-493f-b012-2a86acf4610e" // Write
 }
 
 final class LittleBLE {
@@ -43,10 +58,20 @@ class BLEManager: ObservableObject {
     @Published var data: [[UInt8]] = [[]]
     
     let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
-    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
-    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
+    let readChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.read, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .read)
+    let writeChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .write)
     
-    let writeAndListenChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.write, for: HRMCostants.DEVICE_SERVICE_UUID, properties: [.notify, .write])
+    let notifyChar1 = LittleBlueToothCharacteristic(characteristic: HRMCostants.NOTIFY1, for: HRMCostants.DEVICE_SERVICE_UUID1, properties: .notify)
+    let readChar1 = LittleBlueToothCharacteristic(characteristic: HRMCostants.READ1, for: HRMCostants.DEVICE_SERVICE_UUID1, properties: .read)
+    let writeChar1 = LittleBlueToothCharacteristic(characteristic: HRMCostants.WRITE1, for: HRMCostants.DEVICE_SERVICE_UUID1, properties: .write)
+    
+    let notifyChar2 = LittleBlueToothCharacteristic(characteristic: HRMCostants.NOTIFY2, for: HRMCostants.DEVICE_SERVICE_UUID2, properties: .notify)
+    let readChar2 = LittleBlueToothCharacteristic(characteristic: HRMCostants.READ2, for: HRMCostants.DEVICE_SERVICE_UUID2, properties: .read)
+    let writeChar2 = LittleBlueToothCharacteristic(characteristic: HRMCostants.WRITE2, for: HRMCostants.DEVICE_SERVICE_UUID2, properties: .write)
+    
+    let notifyChar3 = LittleBlueToothCharacteristic(characteristic: HRMCostants.NOTIFY3, for: HRMCostants.DEVICE_SERVICE_UUID3, properties: .notify)
+    let readChar3 = LittleBlueToothCharacteristic(characteristic: HRMCostants.READ3, for: HRMCostants.DEVICE_SERVICE_UUID3, properties: .read)
+    let writeChar3 = LittleBlueToothCharacteristic(characteristic: HRMCostants.WRITE3, for: HRMCostants.DEVICE_SERVICE_UUID3, properties: .write)
     
     var littleBT = LittleBLE.shared.littleBT!
     
@@ -86,25 +111,25 @@ class BLEManager: ObservableObject {
             })
             .store(in: &disposeBag)
         
-//        StartLittleBlueTooth
-//            .startDiscovery(for: self.littleBT, withServices: [])
-//            .prefix(4)
-//            .sink(receiveCompletion: { result in
-//                
-//                print("Result: \(result)")
-//                switch result {
-//                case .finished:
-//                    break
-//                case .failure(let error):
-//                    print("Error trying to connect: \(error)")
-//                }
-//            }) { (periph) in
-////                print("Periph from startDiscovering: \(periph)")
-//                if let name = periph.name, !self.list.contains(name) {
-//                    self.list.append(name)
-//                }
-//        }
-//            .store(in: &disposeBag)
+        //        StartLittleBlueTooth
+        //            .startDiscovery(for: self.littleBT, withServices: [])
+        //            .prefix(4)
+        //            .sink(receiveCompletion: { result in
+        //                
+        //                print("Result: \(result)")
+        //                switch result {
+        //                case .finished:
+        //                    break
+        //                case .failure(let error):
+        //                    print("Error trying to connect: \(error)")
+        //                }
+        //            }) { (periph) in
+        ////                print("Periph from startDiscovering: \(periph)")
+        //                if let name = periph.name, !self.list.contains(name) {
+        //                    self.list.append(name)
+        //                }
+        //        }
+        //            .store(in: &disposeBag)
     }
     
     func connect(discovery: PeripheralDiscovery?, completion: @escaping (Bool) -> Void) {
@@ -129,7 +154,7 @@ class BLEManager: ObservableObject {
                 }
             }, receiveValue: { (periph) in
                 print("Connected Peripheral \(periph)")
-//                self.startListening()
+                //                self.startListening()
                 completion(true)
             })
             .store(in: &disposeBag)
@@ -154,24 +179,24 @@ class BLEManager: ObservableObject {
                 print("Periph from startDiscovering: \(periph)")
                 self.buttonIsEnabe = true
                 self.connected = true
-//                self.startListening()
+                //                self.startListening()
                 
-        }
-        .store(in: &disposeBag)
+            }
+            .store(in: &disposeBag)
         
         StartLittleBlueTooth
             .startListen(for: self.littleBT, from: notifyChar)
             .sink(receiveCompletion: { (result) in
-                    print("Result listening: \(result)")
-                    switch result {
-                    case .finished:
-                        break
-                    case .failure(let error):
-                        print("Error while trying to listen: \(error)")
-                    }
+                print("Result listening: \(result)")
+                switch result {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error while trying to listen: \(error)")
+                }
             }) { (value: readData) in
                 
-//                self.text = String(value.list)
+                //                self.text = String(value.list)
             }
             .store(in: &disposeBag)
     }
@@ -181,17 +206,17 @@ class BLEManager: ObservableObject {
         StartLittleBlueTooth
             .startListen(for: self.littleBT, from: notifyChar)
             .sink(receiveCompletion: { (result) in
-                    print("Result listening: \(result)")
-                    switch result {
-                    case .finished:
-                        break
-                    case .failure(let error):
-                        print("Error while trying to listen: \(error)")
-                    }
+                print("Result listening: \(result)")
+                switch result {
+                case .finished:
+                    break
+                case .failure(let error):
+                    print("Error while trying to listen: \(error)")
+                }
             }) { (value: readData) in
                 self.data.append(value.bytes)
                 print(value.bytes)
-//                self.text = String(value.list)
+                //                self.text = String(value.list)
             }
             .store(in: &disposeBag)
     }
@@ -244,74 +269,109 @@ class BLEManager: ObservableObject {
             }) { (_) in
                 self.buttonIsEnabe = true
                 self.connected = false
-        }
-        .store(in: &disposeBag)
+            }
+            .store(in: &disposeBag)
     }
     
     func multipleListener() {
         // First publisher
         littleBT.listenPublisher
-        .filter { charact -> Bool in
-            charact.id == self.readChar.id
-        }
-        .tryMap { (characteristic) -> readData in
-                try characteristic.value()
-        }
-        .mapError { (error) -> LittleBluetoothError in
-            if let er = error as? LittleBluetoothError {
-                return er
+            .filter { charact -> Bool in
+                charact.id == self.readChar1.id
             }
-            return .emptyData
-        }
-        .sink(receiveCompletion: { completion in
+            .tryMap { (characteristic) -> readData in
+                try characteristic.value()
+            }
+            .mapError { (error) -> LittleBluetoothError in
+                if let er = error as? LittleBluetoothError {
+                    return er
+                }
+                return .emptyData
+            }
+            .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
                 print("Sub1: \(answer)")
-        }
-        .store(in: &self.disposeBag)
-
+            }
+            .store(in: &self.disposeBag)
+        
         // Second publisher
         littleBT.listenPublisher
-        .filter { charact -> Bool in
-            charact.id == self.readChar.id
-        }
-        .tryMap { (characteristic) -> readData in
-            try characteristic.value()
-        }.mapError { (error) -> LittleBluetoothError in
-            if let er = error as? LittleBluetoothError {
-                return er
+            .filter { charact -> Bool in
+                charact.id == self.readChar2.id
             }
-            return .emptyData
-        }
-        .sink(receiveCompletion: { completion in
+            .tryMap { (characteristic) -> readData in
+                try characteristic.value()
+            }.mapError { (error) -> LittleBluetoothError in
+                if let er = error as? LittleBluetoothError {
+                    return er
+                }
+                return .emptyData
+            }
+            .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
                 print("Sub2: \(answer)")
-        }
-        .store(in: &self.disposeBag)
-
-
-        littleBT.startDiscovery(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey : false])
-        .map { disc -> PeripheralDiscovery in
+            }
+            .store(in: &self.disposeBag)
+        
+        // Third publisher
+        littleBT.listenPublisher
+            .filter { charact -> Bool in
+                charact.id == self.readChar3.id
+            }
+            .tryMap { (characteristic) -> readData in
+                try characteristic.value()
+            }.mapError { (error) -> LittleBluetoothError in
+                if let er = error as? LittleBluetoothError {
+                    return er
+                }
+                return .emptyData
+            }
+            .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print("Sub3: \(answer)")
+            }
+            .store(in: &self.disposeBag)
+        
+        
+//        littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID2)])
+        littleBT.startDiscovery(withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID1), CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID2), CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID3)])
+            .map { disc -> PeripheralDiscovery in
                 print("Discovery discovery \(disc)")
                 return disc
-        }
-        .flatMap { discovery in
-            self.littleBT.connect(to: discovery)
-        }
-        .flatMap { periph in
-            self.littleBT.enableListen(from: self.readChar)
-        }
-        .flatMap { periph in
-            self.littleBT.enableListen(from: self.readChar)
-        }
-        .sink(receiveCompletion: { completion in
-            print("Completion \(completion)")
-        }) { (answer) in
-          
-        }
-        .store(in: &disposeBag)
+            }
+            .flatMap { discovery in
+                self.littleBT.connect(to: discovery)
+            }
+            .flatMap { discovery in
+                if discovery.id.uuidString == "F4E43595-BE92-07BF-4BE1-F9FFA6D28F5A" {
+                    self.littleBT.write(to: self.writeChar1, value: startCommand(), response: false)
+                } else if discovery.id.uuidString == "127D8C5E-14A0-6600-5D13-809ABB0EF0CD" {
+                    self.littleBT.write(to: self.writeChar2, value: startCommand(), response: false)
+                } else if discovery.id.uuidString == "941E1DCA-E060-6252-F4C4-EE064AA1AD23" {
+                    self.littleBT.write(to: self.writeChar3, value: startCommand(), response: false)
+                }
+//                self.littleBT.write(to: self.writeChar2, value: startCommand(), response: false)
+            }
+            .flatMap { periph in
+                self.littleBT.enableListen(from: self.readChar1)
+            }
+            .flatMap { periph in
+                self.littleBT.enableListen(from: self.readChar2)
+            }
+            .flatMap { periph in
+                self.littleBT.enableListen(from: self.readChar2)
+            }
+            .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                
+            }
+            .store(in: &disposeBag)
     }
+}
 
 struct startCommand: Writable {
     func createGetWiFiListCommand() -> [UInt8] {

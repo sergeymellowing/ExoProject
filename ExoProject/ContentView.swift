@@ -27,6 +27,11 @@ struct ContentView: View {
             }
             .padding()
             
+            Button(action: bleManager.multipleListener) {
+                Text("START MULTIPLE LISTENER")
+            }
+            .padding()
+            
             ScrollView {
                 Text(convertBytesToInt(newArr: a).description)
                     .onAppear {
