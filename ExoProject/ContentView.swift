@@ -172,11 +172,16 @@ struct ContentView: View {
         
         do {
             let jsonData = try encoder.encode(data)
-            
+            let date = Date()
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .long
+            dateFormatter.timeStyle = .short
+            let dateString = dateFormatter.string(from: Date())
+            let name = "\(dateString)_\(type.rawValue)"
             
             // Define the file URL where you want to save the JSON data
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-            let fileURL = documentsDirectory.appendingPathComponent("\(type.rawValue).json")
+            let fileURL = documentsDirectory.appendingPathComponent("\(name).json")
             
             // Write JSON data to the file
             try jsonData.write(to: fileURL)
