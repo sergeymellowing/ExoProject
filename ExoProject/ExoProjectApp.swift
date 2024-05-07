@@ -14,6 +14,7 @@ struct ExoProjectApp: App {
     
     var body: some Scene {
         WindowGroup {
+//            BLEView()
             ContentView()
 //            NewBleView()
         }

@@ -19,113 +19,115 @@ struct ContentView: View {
     
     @State var connectedDevices: [PeripheralDiscovery] = []
     
-    let a =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 84, 217, 253, 114, 6, 102, 4, 59, 255, 236, 0, 2, 2, 72, 89, 210, 253, 253, 4, 137, 6, 130, 255, 251, 255, 253, 1, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     var body: some View {
         VStack {
-            Button(action: bleManager.discover) {
-                Text("START DISCOVER")
-            }
-            .padding()
-            
-            Button(action: bleManager.multipleListener) {
-                Text("START MULTIPLE LISTENER")
-            }
-            .padding()
-            
             ScrollView {
-                Text(convertBytesToInt(newArr: a).description)
-                    .onAppear {
-                        print(convertBytesToInt(newArr: a))
-                        print(convertBytesToInt(newArr: a).count)
-                    }
-                
-//                let names = bleManager.list.filter{ (($0.name?.isEmpty) != nil) }.map { $0.name ?? "noname" }
-//                let ids = bleManager.list.map { $0.id }
-                
-//                let adaptiveColumn = [
-//                    GridItem(.flexible(minimum: 100, maximum: 200)),
-//                    GridItem(.flexible(minimum: 100, maximum: 200))
-//                    ]
-//                LazyVGrid(columns: adaptiveColumn, spacing: 10) {
-//                    ForEach(names, id: \.self) { name in
-//                        Button(action: {
-//                            // TODO: need refactoring
-//                            bleManager.connect(discovery: bleManager.list.first(where: { $0.name == name })) { success in
-//                                self.firstConnectedDevice = name
-//                            }
-//                        }) {
-////                            VStack {
-//                                Text(name)
-//                                    .foregroundColor(.white)
-////                            }.overlay(
-////                                RoundedRectangle(cornerRadius: 15)
-////                                    .fill(self.firstConnectedDevice == name ? Color.green.opacity(0.5) : Color.gray.opacity(0.2))
-////                            )
-//                            .frame(maxWidth: .infinity, maxHeight: 200)
-//                            .frame(minHeight: 150)
-//                            .background((self.firstConnectedDevice == name ? Color.green.opacity(0.5) : Color.gray.opacity(0.2)))
-//                            .clipShape(RoundedRectangle(cornerRadius: 15))
+                Button(action: {
+//                    if let suit_data = UserDefaults.standard.data(forKey: "suit_data") {
+//                        do {
+//                            // Create JSON Decoder
+//                            let decoder = JSONDecoder()
+//                            print("-------------------------")
+//                            print("SUIT DATA:")
+//                            print(try decoder.decode([DataAndTimeStamp].self, from: suit_data))
+//                        } catch {
+//                            print("Unable to Decode Suit Data (\(error))")
 //                        }
 //                    }
-//                }
-                
-                ForEach(bleManager.list, id: \.self) { id in
-                    Button(action: {
-                        bleManager.connect(discovery: bleManager.discoveries.first(where: { $0.id == id })) { success in
-                            guard let peripheral = bleManager.discoveries.first(where: { $0.id == id }) else { return }
-                            print("trying to connect to: \(id)")
-                            self.connectedDevices.append(peripheral)
-                        }
-                    }) {
-                        Text(id.uuidString)
-                            .padding(20)
-                            .frame(maxWidth: .infinity)
-                            .background((self.connectedDevices.contains(where: { $0.id == id }) ? Color.green.opacity(0.5) : Color.gray.opacity(0.2)))
-                            .padding(10)
-                    }
+//                    if let band_L_data = UserDefaults.standard.data(forKey: "band_L_data") {
+//                        do {
+//                            // Create JSON Decoder
+//                            let decoder = JSONDecoder()
+//                            print("-------------------------")
+//                            print("BAND_L DATA:")
+//                            print(try decoder.decode([DataAndTimeStamp].self, from: band_L_data))
+//                        } catch {
+//                            print("Unable to Decode band_L Data (\(error))")
+//                        }
+//                    }
+//                    if let band_R_data = UserDefaults.standard.data(forKey: "band_R_data") {
+//                        do {
+//                            // Create JSON Decoder
+//                            let decoder = JSONDecoder()
+//                            print("-------------------------")
+//                            print("BAND_R DATA:")
+//                            print(try decoder.decode([DataAndTimeStamp].self, from: band_R_data))
+//                        } catch {
+//                            print("Unable to Decode band_R Data (\(error))")
+//                        }
+//                    }
+                }) {
+                    Text("PRINT DATA")
                 }
+                .padding(10)
+                
+                Button(action: {
+                    bleManager.startBandL()
+                    bleManager.startBandR()
+                    bleManager.startSuit()
+                }) {
+                    Text("START ALL")
+                        .font(.title)
+                        .frame(maxWidth: .infinity, maxHeight: 45)
+                }
+                .buttonStyle(.bordered)
+                .padding(5)
+                .padding(.top, 20)
+                
+//                SensorConnectView(type: .BAND_L, action: bleManager.startBandL)
+//                SensorConnectView(type: .BAND_R, action: bleManager.startBandR)
+//                SensorConnectView(type: .SUIT, action: bleManager.startSuit)
+                
+    //            Button(action: { bleManager.connect() }) {
+    //                Text("CONNECT")
+    //                    .font(.title)
+    //                    .frame(maxWidth: .infinity, maxHeight: 55)
+    //            }
+    //            .buttonStyle(.bordered)
+    //            .padding(5)
+    //
+    //            Button(action: { bleManager.start() }) {
+    //                Text("START")
+    //                    .font(.title)
+    //                    .frame(maxWidth: .infinity, maxHeight: 55)
+    //            }
+    //            .buttonStyle(.bordered)
+    //            .padding(5)
+    //
+    //            Button(action: { bleManager.startListening() }) {
+    //                Text("LISTEN")
+    //                    .font(.title)
+    //                    .frame(maxWidth: .infinity, maxHeight: 55)
+    //            }
+    //            .buttonStyle(.bordered)
+    //            .padding(5)
+    //
+    //
+                Button(action: { bleManager.stopAll() }) {
+                    Text("STOP ALL")
+                        .font(.title)
+                        .frame(maxWidth: .infinity, maxHeight: 45)
+                }
+                .buttonStyle(.bordered)
+                .padding(5)
+                
+//                Button(action: { bleManager.stopDevice3() }) {
+//                    Text("STOP")
+//                        .font(.title)
+//                        .frame(maxWidth: .infinity, maxHeight: 55)
+//                }
+//                .buttonStyle(.bordered)
+//                .padding(5)
+    //
+                
+                Button(action: save) {
+                    Text("SAVE")
+                        .font(.title)
+                        .frame(maxWidth: .infinity, maxHeight: 55)
+                }
+                .buttonStyle(.bordered)
+                .padding(5)
             }
-            
-            Button(action: { bleManager.connect() }) {
-                Text("CONNECT")
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: 55)
-            }
-            .buttonStyle(.bordered)
-            .padding(5)
-            
-            Button(action: { bleManager.start() }) {
-                Text("START")
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: 55)
-            }
-            .buttonStyle(.bordered)
-            .padding(5)
-            
-            Button(action: { bleManager.startListening() }) {
-                Text("LISTEN")
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: 55)
-            }
-            .buttonStyle(.bordered)
-            .padding(5)
-            
-            
-            Button(action: { bleManager.stop() }) {
-                Text("STOP")
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: 55)
-            }
-            .buttonStyle(.bordered)
-            .padding(5)
-            
-            Button(action: save) {
-                Text("SAVE")
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: 55)
-            }
-            .buttonStyle(.bordered)
-            .padding(5)
             
             Spacer()
         }
@@ -134,7 +136,55 @@ struct ContentView: View {
 
     //TODO: save all peripherals to DB
     private func save() {
-        UserDefaults.standard.setValue(self.bleManager.data, forKey: "data1")
+//        do {
+            // Create JSON Encoder
+//            let encoder = JSONEncoder()
+
+            // Encode
+//            let suit_data = try encoder.encode(self.bleManager.suit_data)
+//            let band_L_data = try encoder.encode(self.bleManager.band_L_data)
+//            let band_R_data = try encoder.encode(self.bleManager.band_R_data)
+
+            // Write/Set Data
+//            UserDefaults.standard.set(suit_data, forKey: "suit_data")
+//            UserDefaults.standard.set(suit_data, forKey: "band_L_data")
+//            UserDefaults.standard.set(suit_data, forKey: "band_R_data")
+            
+//            UserDefaults.standard.set((self.bleManager.suit_data), forKey: <#T##String#>)
+//            print("data was successfully saved")
+//        } catch {
+//            print("Unable to Encode Array of Notes (\(error))")
+//        }
+
+//        UserDefaults.standard.setValue(self.bleManager.suit_data, forKey: "suit_data")
+//        UserDefaults.standard.setValue(self.bleManager.band_L_data, forKey: "band_L_data")
+//        UserDefaults.standard.setValue(self.bleManager.band_R_data, forKey: "band_R_data")
+        self.saveDataAsJSON(data: bleManager.suit_data, type: .SUIT)
+        self.saveDataAsJSON(data: bleManager.band_L_data, type: .BAND_L)
+        self.saveDataAsJSON(data: bleManager.band_R_data, type: .BAND_R)
+    }
+    
+    func saveDataAsJSON(data: [DataAndTimeStamp], type: SensorType) {
+        
+        // Convert data to JSON format
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        do {
+            let jsonData = try encoder.encode(data)
+            
+            
+            // Define the file URL where you want to save the JSON data
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = documentsDirectory.appendingPathComponent("\(type.rawValue).json")
+            
+            // Write JSON data to the file
+            try jsonData.write(to: fileURL)
+            
+            print("Data saved as JSON successfully.")
+        } catch {
+            print("Error: \(error.localizedDescription)")
+        }
     }
 }
 
@@ -157,31 +207,32 @@ struct CustomButton: View {
     ContentView()
 }
 
-struct NewBleView: View {
-    @StateObject var bleManager = BLEManager()
+struct SensorConnectView: View {
+    var type: SensorType
+    let action: () -> Void
     
     var body: some View {
-        VStack(spacing: 40) {
-            Button(action: {
-                bleManager.pressedConnect()
-            }) {
-                Text(bleManager.connected ? "DISCONNECT" : "CONNECT")
-                    .font(.title)
+        let image = {
+            switch type {
+            case .SUIT:
+                "accessibility"
+            case .BAND_L:
+                "left.circle"
+            case .BAND_R:
+                "right.circle"
             }
-            
-            Button(action: {
-                bleManager.startListening()
-            }) {
-                Text("START LISTENING")
-                    .font(.title)
-            }
-            
-            Button(action: {
-                bleManager.start()
-            }) {
-                Text("GET WIFI LIST")
-                    .font(.title)
-            }
+        }()
+        
+        Button(action: action) {
+            HStack {
+                Image(systemName: image)
+                    .font(.title2)
+                Text(type.rawValue)
+                    .textCase(.uppercase)
+                    .font(.title2)
+            }.frame(maxWidth: .infinity, maxHeight: 55)
         }
+        .buttonStyle(.bordered)
+        .padding(5)
     }
 }

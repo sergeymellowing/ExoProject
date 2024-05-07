@@ -10,6 +10,8 @@
 		2B3FD4622BD763D00090BA9D /* LittleBlueTooth in Frameworks */ = {isa = PBXBuildFile; productRef = 2B3FD4612BD763D00090BA9D /* LittleBlueTooth */; };
 		2B3FD4642BD763D00090BA9D /* LittleBlueToothForTest in Frameworks */ = {isa = PBXBuildFile; productRef = 2B3FD4632BD763D00090BA9D /* LittleBlueToothForTest */; };
 		2B3FD4662BD76E060090BA9D /* BleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3FD4652BD76E060090BA9D /* BleManager.swift */; };
+		85803E722BE9E06400993229 /* BluetoothManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85803E712BE9E06400993229 /* BluetoothManager.swift */; };
+		85803E742BE9E09300993229 /* BLEView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85803E732BE9E09300993229 /* BLEView.swift */; };
 		85CA05972BD0D6F1000F1C9F /* ExoProjectApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CA05962BD0D6F1000F1C9F /* ExoProjectApp.swift */; };
 		85CA05992BD0D6F1000F1C9F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CA05982BD0D6F1000F1C9F /* ContentView.swift */; };
 		85CA059B2BD0D6F3000F1C9F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85CA059A2BD0D6F3000F1C9F /* Assets.xcassets */; };
@@ -19,6 +21,8 @@
 /* Begin PBXFileReference section */
 		2B3FD4652BD76E060090BA9D /* BleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BleManager.swift; sourceTree = "<group>"; };
 		8570541A2BE33ADA0004E582 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		85803E712BE9E06400993229 /* BluetoothManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothManager.swift; sourceTree = "<group>"; };
+		85803E732BE9E09300993229 /* BLEView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLEView.swift; sourceTree = "<group>"; };
 		85CA05932BD0D6F1000F1C9F /* ExoProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExoProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		85CA05962BD0D6F1000F1C9F /* ExoProjectApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExoProjectApp.swift; sourceTree = "<group>"; };
 		85CA05982BD0D6F1000F1C9F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -66,6 +70,8 @@
 				85CA059A2BD0D6F3000F1C9F /* Assets.xcassets */,
 				85CA059C2BD0D6F3000F1C9F /* ExoProject.entitlements */,
 				85CA059D2BD0D6F3000F1C9F /* Preview Content */,
+				85803E712BE9E06400993229 /* BluetoothManager.swift */,
+				85803E732BE9E09300993229 /* BLEView.swift */,
 			);
 			path = ExoProject;
 			sourceTree = "<group>";
@@ -156,7 +162,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				85CA05992BD0D6F1000F1C9F /* ContentView.swift in Sources */,
+				85803E742BE9E09300993229 /* BLEView.swift in Sources */,
 				85CA05972BD0D6F1000F1C9F /* ExoProjectApp.swift in Sources */,
+				85803E722BE9E06400993229 /* BluetoothManager.swift in Sources */,
 				2B3FD4662BD76E060090BA9D /* BleManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
