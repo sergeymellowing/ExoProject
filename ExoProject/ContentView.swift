@@ -18,46 +18,15 @@ struct ContentView: View {
     @State var fourthDeviceConnected: Bool = false
     
     @State var connectedDevices: [PeripheralDiscovery] = []
+    @State var customField: String = ""
     
     var body: some View {
         VStack {
             ScrollView {
                 Button(action: {
-//                    if let suit_data = UserDefaults.standard.data(forKey: "suit_data") {
-//                        do {
-//                            // Create JSON Decoder
-//                            let decoder = JSONDecoder()
-//                            print("-------------------------")
-//                            print("SUIT DATA:")
-//                            print(try decoder.decode([DataAndTimeStamp].self, from: suit_data))
-//                        } catch {
-//                            print("Unable to Decode Suit Data (\(error))")
-//                        }
-//                    }
-//                    if let band_L_data = UserDefaults.standard.data(forKey: "band_L_data") {
-//                        do {
-//                            // Create JSON Decoder
-//                            let decoder = JSONDecoder()
-//                            print("-------------------------")
-//                            print("BAND_L DATA:")
-//                            print(try decoder.decode([DataAndTimeStamp].self, from: band_L_data))
-//                        } catch {
-//                            print("Unable to Decode band_L Data (\(error))")
-//                        }
-//                    }
-//                    if let band_R_data = UserDefaults.standard.data(forKey: "band_R_data") {
-//                        do {
-//                            // Create JSON Decoder
-//                            let decoder = JSONDecoder()
-//                            print("-------------------------")
-//                            print("BAND_R DATA:")
-//                            print(try decoder.decode([DataAndTimeStamp].self, from: band_R_data))
-//                        } catch {
-//                            print("Unable to Decode band_R Data (\(error))")
-//                        }
-//                    }
+                    bleManager.discover()
                 }) {
-                    Text("PRINT DATA")
+                    Text("DISCOVER")
                 }
                 .padding(10)
                 
@@ -77,34 +46,20 @@ struct ContentView: View {
 //                SensorConnectView(type: .BAND_L, action: bleManager.startBandL)
 //                SensorConnectView(type: .BAND_R, action: bleManager.startBandR)
 //                SensorConnectView(type: .SUIT, action: bleManager.startSuit)
-                
-    //            Button(action: { bleManager.connect() }) {
-    //                Text("CONNECT")
-    //                    .font(.title)
-    //                    .frame(maxWidth: .infinity, maxHeight: 55)
-    //            }
-    //            .buttonStyle(.bordered)
-    //            .padding(5)
-    //
-    //            Button(action: { bleManager.start() }) {
-    //                Text("START")
-    //                    .font(.title)
-    //                    .frame(maxWidth: .infinity, maxHeight: 55)
-    //            }
-    //            .buttonStyle(.bordered)
-    //            .padding(5)
-    //
-    //            Button(action: { bleManager.startListening() }) {
-    //                Text("LISTEN")
-    //                    .font(.title)
-    //                    .frame(maxWidth: .infinity, maxHeight: 55)
-    //            }
-    //            .buttonStyle(.bordered)
-    //            .padding(5)
-    //
-    //
+
                 Button(action: { bleManager.stopAll() }) {
                     Text("STOP ALL")
+                        .font(.title)
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity, maxHeight: 45)
+                }
+                .buttonStyle(.bordered)
+                .padding(5)
+                
+                Button(action: {
+                    bleManager.restartAll()
+                }) {
+                    Text("RESTART ALL")
                         .font(.title)
                         .frame(maxWidth: .infinity, maxHeight: 45)
                 }
@@ -119,6 +74,12 @@ struct ContentView: View {
 //                .buttonStyle(.bordered)
 //                .padding(5)
     //
+                
+                TextField("CUSTOM FIELD", text: $customField)
+                    .textInputAutocapitalization(.never)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.top, 30)
+                    .padding()
                 
                 Button(action: save) {
                     Text("SAVE")
@@ -159,25 +120,28 @@ struct ContentView: View {
 //        UserDefaults.standard.setValue(self.bleManager.suit_data, forKey: "suit_data")
 //        UserDefaults.standard.setValue(self.bleManager.band_L_data, forKey: "band_L_data")
 //        UserDefaults.standard.setValue(self.bleManager.band_R_data, forKey: "band_R_data")
+        print("SUIT: \(bleManager.suit_data.count)")
+        print("BAND L: \(bleManager.band_L_data.count)")
+        print("BAND R: \(bleManager.band_R_data.count)")
         self.saveDataAsJSON(data: bleManager.suit_data, type: .SUIT)
-        self.saveDataAsJSON(data: bleManager.band_L_data, type: .BAND_L)
-        self.saveDataAsJSON(data: bleManager.band_R_data, type: .BAND_R)
+        self.saveDataAsJSON(bandData: bleManager.band_L_data, type: .BAND_L)
+        self.saveDataAsJSON(bandData: bleManager.band_R_data, type: .BAND_R)
     }
     
-    func saveDataAsJSON(data: [DataAndTimeStamp], type: SensorType) {
+    func saveDataAsJSON(data: [DataAndTimeStamp]? = nil, bandData: [DataAndTimeStampBand]? = nil, type: SensorType) {
         
         // Convert data to JSON format
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         
         do {
-            let jsonData = try encoder.encode(data)
-            let date = Date()
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateStyle = .long
-            dateFormatter.timeStyle = .short
-            let dateString = dateFormatter.string(from: Date())
-            let name = "\(dateString)_\(type.rawValue)"
+            var jsonData = try encoder.encode(data)
+            if let bandData {
+                jsonData = try encoder.encode(bandData)
+            }
+            
+            
+            let name = "\(Date().toString())_\(self.customField)_\(type.rawValue)"
             
             // Define the file URL where you want to save the JSON data
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -190,6 +154,14 @@ struct ContentView: View {
         } catch {
             print("Error: \(error.localizedDescription)")
         }
+    }
+}
+
+extension Date {
+    func toString() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmssSSS"
+        return dateFormatter.string(from: self)
     }
 }
 

@@ -53,8 +53,13 @@ final class LittleBLE {
 }
 
 struct DataAndTimeStamp: Codable {
-    let date: Date
-    let data: [Int16]
+    let date: String
+    let data: [Int32]
+}
+
+struct DataAndTimeStampBand: Codable {
+    let date: String
+    let data: [UInt32]
 }
 
 class BLEManager: ObservableObject {
@@ -66,8 +71,8 @@ class BLEManager: ObservableObject {
     @Published var discoveries: [PeripheralDiscovery] = []
     @Published var data: [[UInt8]] = [[]]
     
-    @Published var band_L_data: [DataAndTimeStamp] = []
-    @Published var band_R_data: [DataAndTimeStamp] = []
+    @Published var band_L_data: [DataAndTimeStampBand] = []
+    @Published var band_R_data: [DataAndTimeStampBand] = []
     @Published var suit_data: [DataAndTimeStamp] = []
     
     let notifyChar = LittleBlueToothCharacteristic(characteristic: HRMCostants.notify, for: HRMCostants.DEVICE_SERVICE_UUID, properties: .notify)
@@ -104,7 +109,7 @@ class BLEManager: ObservableObject {
     func discover() {
         print("discovering...")
         StartLittleBlueTooth
-            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID)])
+            .startDiscovery(for: self.littleBT, withServices: [CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID1), CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID2), CBUUID(string: HRMCostants.DEVICE_SERVICE_UUID3)])
             .collect(.byTime(RunLoop.main, .seconds(1)))
             .map{ (discoveries) -> [PeripheralDiscovery] in
                 print("Discoveries: \(discoveries.map { $0.id } )")
@@ -369,8 +374,8 @@ class BLEManager: ObservableObject {
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
-                self.band_L_data.append(DataAndTimeStamp(date: Date(), data: answer.list))
-                print("BAND-L: \(answer)")
+                self.band_L_data.append(DataAndTimeStampBand(date: Date().toString(), data: answer.list))
+                print("BAND-L: \(answer.list)")
             }
             .store(in: &self.disposeBag)
         
@@ -410,8 +415,8 @@ class BLEManager: ObservableObject {
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
-                self.band_R_data.append(DataAndTimeStamp(date: Date(), data: answer.list))
-                print("BAND-R: \(answer)")
+                self.band_R_data.append(DataAndTimeStampBand(date: Date().toString(), data: answer.list))
+                print("BAND-R: \(answer.list)")
             }
             .store(in: &self.disposeBag)
         
@@ -451,7 +456,7 @@ class BLEManager: ObservableObject {
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
-                self.suit_data.append(DataAndTimeStamp(date: Date(), data: answer.list))
+                self.suit_data.append(DataAndTimeStamp(date: Date().toString(), data: answer.list))
                 print("SUIT: \(answer.list)")
             }
             .store(in: &self.disposeBag)
@@ -468,6 +473,35 @@ class BLEManager: ObservableObject {
             .flatMap { periph in
                 self.littleBT3.enableListen(from: self.readChar1)
             }
+            .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print(answer)
+            }
+            .store(in: &disposeBag)
+    }
+    
+    func restartAll() {
+        self.littleBT
+            .write(to: self.writeChar2, value: startCommand())
+            .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print(answer)
+            }
+            .store(in: &disposeBag)
+        
+        self.littleBT2
+            .write(to: self.writeChar3, value: startCommand())
+            .sink(receiveCompletion: { completion in
+                print("Completion \(completion)")
+            }) { (answer) in
+                print(answer)
+            }
+            .store(in: &disposeBag)
+        
+        self.littleBT3
+            .write(to: self.writeChar1, value: startCommand())
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
@@ -709,7 +743,7 @@ struct stopCommand: Writable {
 }
 
 struct readBand: Readable {
-    var list: [Int16]
+    var list: [UInt32]
 //    var bytes: [UInt8]
     
     init(from data: Data) throws {
@@ -719,13 +753,34 @@ struct readBand: Readable {
             newArr.append(data[i])
         }
         
-//        bytes = [UInt8](newArr)
-        list = convertBytesToInt(newArr: newArr)
+        var uint32Array : [UInt32] = []
+        for i in stride(from: 0, to: 12, by: 2) {
+            if newArr.count > i + 1 {
+                let byte1 = newArr[i]
+                let byte2 = newArr[i + 1]
+                var combined: Int32 = Int32(UInt32(byte1) * 256 + UInt32(byte2))
+                if (combined > 32768) {
+                    combined = combined-65536
+                }
+                uint32Array.append(UInt32(combined))
+            }
+        }
+        for i in stride(from: 12, to: newArr.count, by: 4) {
+            let byte1 = newArr[i]
+            let byte2 = newArr[i + 1]
+            let byte3 = newArr[i + 2]
+            let byte4 = newArr[i + 3]
+//            let combined2: UInt32 = (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + (byte4)
+            let combined2: UInt32 = (UInt32(byte1) << 24) + (UInt32(byte2) << 16) + (UInt32(byte3) << 8) + UInt32(byte4)
+
+            uint32Array.append(combined2)
+        }
+        list = uint32Array
     }
 }
 
 struct readData: Readable {
-    var list: [Int16]
+    var list: [Int32]
 //    var bytes: [UInt8]
     
     init(from data: Data) throws {
@@ -736,25 +791,27 @@ struct readData: Readable {
                 newArr.append(data[i])
 //            }
         }
+        list = convertBytesToInt(newArr: newArr)
 //        bytes = [UInt8](newArr)
 //            print(bytesToString(data: [UInt8](data)))
-        var uint16Array: [Int16] = []
-        for i in stride(from: 0, to: newArr.count, by: 2) {
-//            let byte1 = UInt16(newArr[i])
-//            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
-//            let combined = byte2 << 8 | byte1
-            let byte1 = newArr[i]
-            let byte2 = newArr[i + 1]
-            let combined = byte1 << 8 | byte2
-            uint16Array.append(Int16(combined))
-        }
-list = uint16Array
+//        var uint16Array: [Int16] = []
+//        for i in stride(from: 0, to: newArr.count, by: 2) {
+////            let byte1 = UInt16(newArr[i])
+////            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
+////            let combined = byte2 << 8 | byte1
+//            let byte1 = newArr[i]
+//            let byte2 = newArr[i + 1]
+//            let combined = byte1 << 8 | byte2
+//            uint16Array.append(Int16(combined))
+//        }
+//        list = uint16Array
+        
 //        print("uint16Array: \(uint16Array)")
 //        print("count: \(uint16Array.count)")
 //        print(String(utf16CodeUnits: uint16Array, count: uint16Array.count))
-        if let string = String(bytes: newArr, encoding: .utf8) {
+//        if let string = String(bytes: newArr, encoding: .utf8) {
 //            print("UTF8: \(string)")
-        }
+//        }
             
     }
     
@@ -786,8 +843,8 @@ struct readAndConvertData: Readable {
     }
 }
 
-func convertBytesToInt(newArr: [UInt8]) -> [Int16] {
-    var uint16Array: [Int16] = []
+func convertBytesToInt(newArr: [UInt8]) -> [Int32] {
+    var uint16Array: [Int32] = []
     for i in stride(from: 0, to: newArr.count, by: 2) {
 //            let byte1 = UInt16(newArr[i])
 //            let byte2 = i + 1 < newArr.count ? UInt16(newArr[i + 1]) : 0
@@ -798,7 +855,7 @@ func convertBytesToInt(newArr: [UInt8]) -> [Int16] {
         if (combined > 32768) {
             combined = combined-65536
         }
-        uint16Array.append(Int16(combined))
+        uint16Array.append(Int32(combined))
     }
     return uint16Array
 }
