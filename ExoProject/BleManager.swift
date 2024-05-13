@@ -759,9 +759,9 @@ struct readBand: Readable {
                 let byte1 = newArr[i]
                 let byte2 = newArr[i + 1]
                 var combined: Int32 = Int32(UInt32(byte1) * 256 + UInt32(byte2))
-                if (combined > 32768) {
-                    combined = combined-65536
-                }
+//                if (combined > 32768) {
+//                    combined = combined-65536
+//                }
                 uint32Array.append(UInt32(combined))
             }
         }
@@ -852,9 +852,9 @@ func convertBytesToInt(newArr: [UInt8]) -> [Int32] {
         let byte1 = newArr[i]
         let byte2 = newArr[i + 1]
         var combined: Int32 = Int32(UInt32(byte1) * 256 + UInt32(byte2))
-        if (combined > 32768) {
-            combined = combined-65536
-        }
+//        if (combined > 32768) {
+//            combined = combined-65536
+//        }
         uint16Array.append(Int32(combined))
     }
     return uint16Array
