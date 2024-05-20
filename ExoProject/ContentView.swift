@@ -74,6 +74,10 @@ struct ContentView: View {
 //                .buttonStyle(.bordered)
 //                .padding(5)
     //
+                if bleManager.warningExists {
+                    Text("WARNING! Suit is sending same data!")
+                        .foregroundColor(.red)
+                }
                 
                 TextField("CUSTOM FIELD", text: $customField)
                     .textInputAutocapitalization(.never)
@@ -126,6 +130,11 @@ struct ContentView: View {
         self.saveDataAsJSON(data: bleManager.suit_data, type: .SUIT)
         self.saveDataAsJSON(bandData: bleManager.band_L_data, type: .BAND_L)
         self.saveDataAsJSON(bandData: bleManager.band_R_data, type: .BAND_R)
+        
+        // MARK: cleans data after saving
+        bleManager.suit_data.removeAll()
+        bleManager.band_L_data.removeAll()
+        bleManager.band_R_data.removeAll()
     }
     
     func saveDataAsJSON(data: [DataAndTimeStamp]? = nil, bandData: [DataAndTimeStampBand]? = nil, type: SensorType) {

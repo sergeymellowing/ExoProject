@@ -52,7 +52,7 @@ final class LittleBLE {
     }
 }
 
-struct DataAndTimeStamp: Codable {
+struct DataAndTimeStamp: Codable, Equatable {
     let date: String
     let data: [Int32]
 }
@@ -66,6 +66,7 @@ class BLEManager: ObservableObject {
     @Published var state = ""
     @Published var connected = false
     @Published var buttonIsEnabe: Bool = false
+    @Published var warningExists: Bool = false
     @Published var text: String = "__"
     @Published var list: [UUID] = []
     @Published var discoveries: [PeripheralDiscovery] = []
@@ -456,6 +457,7 @@ class BLEManager: ObservableObject {
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
+                self.warningExists = self.suit_data.last == DataAndTimeStamp(date: Date().toString(), data: answer.list)
                 self.suit_data.append(DataAndTimeStamp(date: Date().toString(), data: answer.list))
                 print("SUIT: \(answer.list)")
             }
