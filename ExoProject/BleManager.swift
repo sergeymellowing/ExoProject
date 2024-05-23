@@ -457,7 +457,11 @@ class BLEManager: ObservableObject {
             .sink(receiveCompletion: { completion in
                 print("Completion \(completion)")
             }) { (answer) in
-                self.warningExists = self.suit_data.last == DataAndTimeStamp(date: Date().toString(), data: answer.list)
+                if let last = self.suit_data.last?.data {
+                    let countMismatch = countMismatchedElements(array1: answer.list, array2: last)
+                    self.warningExists = countMismatch > 4
+                }
+                
                 self.suit_data.append(DataAndTimeStamp(date: Date().toString(), data: answer.list))
                 print("SUIT: \(answer.list)")
             }
@@ -860,6 +864,25 @@ func convertBytesToInt(newArr: [UInt8]) -> [Int32] {
         uint16Array.append(Int32(combined))
     }
     return uint16Array
+}
+
+func countMismatchedElements<T: Equatable>(array1: [T], array2: [T]) -> Int {
+    // Ensure both arrays have the same length for comparison
+    let minLength = min(array1.count, array2.count)
+    
+    var mismatchCount = 0
+    
+    // Iterate through the arrays and compare elements at corresponding indices
+    for i in 0..<minLength {
+        if array1[i] != array2[i] {
+            mismatchCount += 1
+        }
+    }
+    
+    // Add the difference in length to the mismatch count if the arrays have different lengths
+    mismatchCount += abs(array1.count - array2.count)
+    
+    return mismatchCount
 }
 
 //func bytesToString(data: [UInt8]) -> String {
