@@ -459,7 +459,7 @@ class BLEManager: ObservableObject {
             }) { (answer) in
                 if let last = self.suit_data.last?.data {
                     let countMismatch = countMismatchedElements(array1: answer.list, array2: last)
-                    self.warningExists = countMismatch > 4
+                    self.warningExists = countMismatch >= 25
                 }
                 
                 self.suit_data.append(DataAndTimeStamp(date: Date().toString(), data: answer.list))
@@ -874,7 +874,7 @@ func countMismatchedElements<T: Equatable>(array1: [T], array2: [T]) -> Int {
     
     // Iterate through the arrays and compare elements at corresponding indices
     for i in 0..<minLength {
-        if array1[i] != array2[i] {
+        if array1[i] == array2[i] {
             mismatchCount += 1
         }
     }
